@@ -1,6 +1,6 @@
 {
   "name": "mongodb-changelog",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Liquibase inspired mongodb changelog tool for node.",
   "main": "src/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/malykhinvi/node-mongodb-changelog.git"
+    "url": "https://github.com/hendrik-scholz/node-mongodb-changelog.git"
   },
   "keywords": [
     "mongodb",
@@ -21,11 +21,16 @@
     "liquibase"
   ],
   "author": "malykhinvi",
+  "contributors": [
+    {
+      "name": "Hendrik Scholz"
+    }
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/malykhinvi/node-mongodb-changelog/issues"
+    "url": "https://github.com/hendrik-scholz/node-mongodb-changelog/issues"
   },
-  "homepage": "https://github.com/malykhinvi/node-mongodb-changelog",
+  "homepage": "https://github.com/hendrik-scholz/node-mongodb-changelog",
   "dependencies": {
     "kerberos": "0.0.23",
     "mongodb": "2.2.31"
