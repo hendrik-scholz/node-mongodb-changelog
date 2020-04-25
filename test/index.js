@@ -3,10 +3,10 @@
 const should = require('should');
 const MongoClient = require('mongodb').MongoClient;
 
-const CONFIG = {
+const CONFIGURATION = {
     mongoUrl: 'mongodb://localhost',
     databaseName: 'dbchangelog_test',
-    mongoConnectionConfig: {}
+    mongoConnectionConfig: { useUnifiedTopology: true }
 };
 
 const changelog = require('../src/index');
@@ -18,33 +18,39 @@ const IllegalConfigurationError = require('../src/error').IllegalConfigurationEr
 let mongoClient;
 
 const firstOperation = () => {
-    const collection = mongoClient.db(CONFIG.databaseName).collection('users');
-    return collection.insert({username: 'admin', password: 'test', isAdmin: true});
+    const collection = mongoClient.db(CONFIGURATION.databaseName).collection('users');
+    return collection.insertOne({username: 'admin', password: 'test', isAdmin: true});
 };
 const secondOperation = () => Promise.resolve(true);
 const thirdOperation = () => Promise.reject();
 const fourthOperation = () => Promise.resolve(true);
 const fifthOperation = () => Promise.resolve(true);
+const promiseRejectOperation = () => Promise.reject('promiseRejectOperation');
+const errorOperation = () => {throw new Error('errorOperation')};
 
 before(async function() {
-    mongoClient = await MongoClient.connect(CONFIG.mongoUrl, CONFIG.mongoConnectionConfig);
-    await mongoClient.db(CONFIG.databaseName).collection('databasechangelog').deleteMany({});
-    await mongoClient.db(CONFIG.databaseName).collection('users').deleteMany({});
+    mongoClient = await MongoClient.connect(CONFIGURATION.mongoUrl, CONFIGURATION.mongoConnectionConfig);
+    await mongoClient.db(CONFIGURATION.databaseName).collection('databasechangelog').deleteMany({});
+    await mongoClient.db(CONFIGURATION.databaseName).collection('users').deleteMany({});
+});
+
+after(async function() {
+    await mongoClient.close();
 });
 
 describe('changelog(config, tasks)', function() {
     it('should return Promise', () => {
-        changelog(CONFIG, []).should.be.an.instanceOf(Promise);
+        changelog(CONFIGURATION, []).should.be.an.instanceOf(Promise);
     });
 
     it('should apply unprocessed operations', function(done) {
-        changelog(CONFIG, [
+        changelog(CONFIGURATION, [
             {name: 'first', operation: firstOperation},
             {name: 'second', operation: secondOperation}
         ]).then(function(result) {
             result.should.have.property('first', changelog.Statuses.SUCCESSFULLY_APPLIED);
             result.should.have.property('second', changelog.Statuses.SUCCESSFULLY_APPLIED);
-            mongoClient.db(CONFIG.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
+            mongoClient.db(CONFIGURATION.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
                 user.should.have.property('username', 'admin');
                 user.should.have.property('password', 'test');
                 user.should.have.property('isAdmin', true);
@@ -56,7 +62,7 @@ describe('changelog(config, tasks)', function() {
     });
 
     it('should not apply already processed operations', function(done) {
-        changelog(CONFIG, [
+        changelog(CONFIGURATION, [
             {name: 'first', operation: firstOperation},
             {name: 'second', operation: secondOperation}
         ]).then(function(result) {
@@ -67,7 +73,7 @@ describe('changelog(config, tasks)', function() {
     });
 
     it('should reject with HashError if already applied operation hash changed', function(done) {
-        changelog(CONFIG, [
+        changelog(CONFIGURATION, [
             {name: 'second', operation: thirdOperation}
         ]).catch((err) => {
             err.should.be.an.instanceOf(HashError);
@@ -76,7 +82,7 @@ describe('changelog(config, tasks)', function() {
     });
 
     it('should reject with IllegalTaskFormat if some operation does not fit format', function(done) {
-        changelog(CONFIG, [
+        changelog(CONFIGURATION, [
             {wrongname: 'first'}
         ]).catch((err) => {
             err.should.be.an.instanceOf(IllegalTaskFormat);
@@ -85,7 +91,7 @@ describe('changelog(config, tasks)', function() {
     });
 
     it('should work as async function', async function() {
-        const appliedTasks = await changelog(CONFIG, [
+        const appliedTasks = await changelog(CONFIGURATION, [
             {name: 'asyncExample', operation: firstOperation}
         ]);
         appliedTasks.should.match({asyncExample: 'SUCCESSFULLY_APPLIED'});
@@ -93,7 +99,7 @@ describe('changelog(config, tasks)', function() {
 
     it('should work as async function (error)', async function() {
         try{
-            await changelog(CONFIG, [{wrongname: 'first'}]);
+            await changelog(CONFIGURATION, [{wrongname: 'first'}]);
         } catch (error) {
             error.should.be.an.instanceOf(IllegalTaskFormat);
         }
@@ -205,7 +211,7 @@ describe('changelog(config, tasks)', function() {
 
     it('should throw an error in case the task list is undefined', async function() {
         try{
-            await changelog(CONFIG, undefined);
+            await changelog(CONFIGURATION, undefined);
         } catch (error) {
             error.should.be.an.instanceOf(IllegalTaskListFormat);
         }
@@ -213,19 +219,19 @@ describe('changelog(config, tasks)', function() {
 
     it('should throw an error in case the task list is null', async function() {
         try{
-            await changelog(CONFIG, null);
+            await changelog(CONFIGURATION, null);
         } catch (error) {
             error.should.be.an.instanceOf(IllegalTaskListFormat);
         }
     });
 
     it('should apply unprocessed operations even though one task is undefined', function(done) {
-        changelog(CONFIG, [
+        changelog(CONFIGURATION, [
             {name: 'fourth', operation: fourthOperation},
             undefined
         ]).then(function(result) {
             result.should.have.property('fourth', changelog.Statuses.SUCCESSFULLY_APPLIED);
-            mongoClient.db(CONFIG.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
+            mongoClient.db(CONFIGURATION.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
                 user.should.have.property('username', 'admin');
                 user.should.have.property('password', 'test');
                 user.should.have.property('isAdmin', true);
@@ -237,12 +243,12 @@ describe('changelog(config, tasks)', function() {
     });
 
     it('should apply unprocessed operations even though one task is null', function(done) {
-        changelog(CONFIG, [
+        changelog(CONFIGURATION, [
             {name: 'fifth', operation: fifthOperation},
             null
         ]).then(function(result) {
             result.should.have.property('fifth', changelog.Statuses.SUCCESSFULLY_APPLIED);
-            mongoClient.db(CONFIG.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
+            mongoClient.db(CONFIGURATION.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
                 user.should.have.property('username', 'admin');
                 user.should.have.property('password', 'test');
                 user.should.have.property('isAdmin', true);
@@ -250,6 +256,40 @@ describe('changelog(config, tasks)', function() {
             });
         }).catch(function(error) {
             done(error);
+        });
+    });
+
+    it('should not create an entry in the databasechangelog collection when task rejects promise', function(done) {
+        changelog(CONFIGURATION, [
+            {name: 'promiseReject', operation: promiseRejectOperation}
+        ]).then(function() {
+            done('Unexpected result for task with promise reject.');
+        }).catch(function(error) {
+            error.should.be.exactly('promiseRejectOperation');
+            mongoClient.db(CONFIGURATION.databaseName).collection('databasechangelog').findOne({name: 'promiseReject'}).then(change => {
+                if (change != null) {
+                    done('Unexpected changelog entry for task with promise reject.');
+                } else {
+                    done();
+                }
+            });
+        });
+    });
+
+    it('should not create an entry in the databasechangelog collection when task throws error', function(done) {
+        changelog(CONFIGURATION, [
+            {name: 'error', operation: errorOperation}
+        ]).then(function() {
+            done('Unexpected result for task throwing an error.');
+        }).catch(function(error) {
+            error.message.should.be.exactly('errorOperation');
+            mongoClient.db(CONFIGURATION.databaseName).collection('databasechangelog').findOne({name: 'error'}).then(change => {
+                if (change != null) {
+                    done('Unexpected changelog entry for task throwing an error.');
+                } else {
+                    done();
+                }
+            });
         });
     });
 });
