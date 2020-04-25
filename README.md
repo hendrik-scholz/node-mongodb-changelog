@@ -35,3 +35,7 @@ Check out tests for more examples.
 - changeset modifications monitoring,
 - migrations automatic run,
 - async/await support
+
+## References
+
+http://mongodb.github.io/node-mongodb-native/3.5/api/

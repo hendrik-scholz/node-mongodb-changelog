@@ -3,25 +3,25 @@
 const should = require('should');
 const MongoClient = require('mongodb').MongoClient;
 
-const CONFIG = {mongoUrl: 'mongodb://localhost/dbchangelog_test'};
+const CONFIG = {mongoUrl: 'mongodb://localhost', databaseName: 'dbchangelog_test', mongoConnectionConfig: {}};
 
 const changelog = require('../src/index');
 const HashError = require('../src/error').HashError;
 const IllegalTaskFormat = require('../src/error').IllegalTaskFormat;
 
-let db;
+let mongoClient;
 
 const firstOperation = () => {
-    const collection = db.collection('users');
+    const collection = mongoClient.db(CONFIG.databaseName).collection('users');
     return collection.insert({username: 'admin', password: 'test', isAdmin: true});
 };
 const secondOperation = () => Promise.resolve(true);
 const thirdOperation = () => Promise.reject();
 
 before(async function() {
-    db = await MongoClient.connect(CONFIG.mongoUrl);
-    await db.collection('databasechangelog').deleteMany({});
-    await db.collection('users').deleteMany({});
+    mongoClient = await MongoClient.connect(CONFIG.mongoUrl, CONFIG.mongoConnectionConfig);
+    await mongoClient.db(CONFIG.databaseName).collection('databasechangelog').deleteMany({});
+    await mongoClient.db(CONFIG.databaseName).collection('users').deleteMany({});
 });
 
 describe('changelog(config, tasks)', function() {
@@ -36,7 +36,7 @@ describe('changelog(config, tasks)', function() {
         ]).then(function(result) {
             result.should.have.property('first', changelog.Statuses.SUCCESSFULLY_APPLIED);
             result.should.have.property('second', changelog.Statuses.SUCCESSFULLY_APPLIED);
-            db.collection('users').findOne({username: 'admin'}).then(user => {
+            mongoClient.db(CONFIG.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
                 user.should.have.property('username', 'admin');
                 user.should.have.property('password', 'test');
                 user.should.have.property('isAdmin', true);
@@ -88,7 +88,4 @@ describe('changelog(config, tasks)', function() {
             error.should.be.an.instanceOf(IllegalTaskFormat);
         }
     });
-
 });
-
-

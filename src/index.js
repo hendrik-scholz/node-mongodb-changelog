@@ -19,8 +19,8 @@ const Statuses = {
  * @returns {Promise} resolved with hash (taskName: Status), or rejected with en error occurred
  */
 async function runMigrations(config, tasks) {
-    const db = await MongoClient.connect(config.mongoUrl, config.mongoConnectionConfig);
-    const changelogCollection = db.collection('databasechangelog');
+    const mongoClient = await MongoClient.connect(config.mongoUrl, config.mongoConnectionConfig);
+    const changelogCollection = await mongoClient.db(config.databaseName).createCollection('databasechangelog');
     await changelogCollection.createIndex({name: 1}, {unique: true});
 
     const result = {};
@@ -28,7 +28,7 @@ async function runMigrations(config, tasks) {
         const task = tasks[i];
         result[task.name] = await processTask(task, changelogCollection);
     }
-    await db.close();
+    await mongoClient.close();
 
     return result;
 }
