@@ -2,7 +2,9 @@
 
 const crypto = require('crypto');
 const MongoClient = require('mongodb').MongoClient;
+const IllegalTaskListFormat = require('./error').IllegalTaskListFormat;
 const IllegalTaskFormat = require('./error').IllegalTaskFormat;
+const IllegalConfigurationError = require('./error').IllegalConfigurationError;
 const HashError = require('./error').HashError;
 
 const Statuses = {
@@ -19,13 +21,23 @@ const Statuses = {
  * @returns {Promise} resolved with hash (taskName: Status), or rejected with en error occurred
  */
 async function runMigrations(config, tasks) {
+    if (!isConfigurationValid(config)) {
+        throw new IllegalConfigurationError();
+    }
+
+    if (!isTaskListValid(tasks)) {
+        throw new IllegalTaskListFormat();
+    }
+
+    const filteredTasks = filterUndefinedOrNullTasks(tasks);
+
     const mongoClient = await MongoClient.connect(config.mongoUrl, config.mongoConnectionConfig);
     const changelogCollection = await mongoClient.db(config.databaseName).createCollection('databasechangelog');
     await changelogCollection.createIndex({name: 1}, {unique: true});
 
     const result = {};
-    for (let i = 0; i < tasks.length; i++) {
-        const task = tasks[i];
+    for (let i = 0; i < filteredTasks.length; i++) {
+        const task = filteredTasks[i];
         result[task.name] = await processTask(task, changelogCollection);
     }
     await mongoClient.close();
@@ -66,6 +78,22 @@ async function processTask(task, changelogCollection) {
         status = Statuses.SUCCESSFULLY_APPLIED;
     }
     return status;
+}
+
+function isConfigurationValid(configuration) {
+    return configuration && configuration.mongoUrl && configuration.databaseName && configuration.mongoConnectionConfig;
+}
+
+function isTaskListValid(taskList) {
+    return taskList;
+}
+
+function isTaskValid(task) {
+    return task.name && task.operation && task.operation instanceof Function;
+}
+
+function filterUndefinedOrNullTasks(tasks) {
+    return tasks.filter(task => task);
 }
 
 function isTaskValid(task) {

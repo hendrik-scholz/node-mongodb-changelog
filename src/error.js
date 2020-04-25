@@ -9,6 +9,24 @@ class HashError extends Error {
     }
 }
 
+class IllegalConfigurationError extends Error {
+  constructor() {
+    super(arguments);
+    Error.captureStackTrace(this, IllegalConfigurationError);
+
+    this.message = 'Wrong configuration format. Expected { mongoUrl: "mongodb://localhost", databaseName: "databaseName", mongoConnectionConfig: object}';
+  }
+}
+
+class IllegalTaskListFormat extends Error {
+  constructor() {
+    super(arguments);
+    Error.captureStackTrace(this, IllegalTaskListFormat);
+
+    this.message = 'Wrong task list format. The task list must not be undefined or null.';
+  }
+}
+
 class IllegalTaskFormat extends Error {
     constructor() {
       super(arguments);
@@ -20,5 +38,7 @@ class IllegalTaskFormat extends Error {
 
 module.exports = {
     HashError,
+    IllegalConfigurationError,
+    IllegalTaskListFormat,
     IllegalTaskFormat
 };

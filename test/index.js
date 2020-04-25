@@ -3,11 +3,17 @@
 const should = require('should');
 const MongoClient = require('mongodb').MongoClient;
 
-const CONFIG = {mongoUrl: 'mongodb://localhost', databaseName: 'dbchangelog_test', mongoConnectionConfig: {}};
+const CONFIG = {
+    mongoUrl: 'mongodb://localhost',
+    databaseName: 'dbchangelog_test',
+    mongoConnectionConfig: {}
+};
 
 const changelog = require('../src/index');
 const HashError = require('../src/error').HashError;
+const IllegalTaskListFormat = require('../src/error').IllegalTaskListFormat;
 const IllegalTaskFormat = require('../src/error').IllegalTaskFormat;
+const IllegalConfigurationError = require('../src/error').IllegalConfigurationError;
 
 let mongoClient;
 
@@ -17,6 +23,8 @@ const firstOperation = () => {
 };
 const secondOperation = () => Promise.resolve(true);
 const thirdOperation = () => Promise.reject();
+const fourthOperation = () => Promise.resolve(true);
+const fifthOperation = () => Promise.resolve(true);
 
 before(async function() {
     mongoClient = await MongoClient.connect(CONFIG.mongoUrl, CONFIG.mongoConnectionConfig);
@@ -42,6 +50,8 @@ describe('changelog(config, tasks)', function() {
                 user.should.have.property('isAdmin', true);
                 done();
             });
+        }).catch(function(error) {
+            done(error);
         });
     });
 
@@ -87,5 +97,159 @@ describe('changelog(config, tasks)', function() {
         } catch (error) {
             error.should.be.an.instanceOf(IllegalTaskFormat);
         }
+    });
+
+    it('should throw an error in case the configuration is undefined', async function() {
+        const configuration = undefined;
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration is null', async function() {
+        const configuration = null;
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration.mongoUrl is undefined', async function() {
+        const configuration = {
+            mongoUrl: undefined,
+            databaseName: 'dbchangelog_test',
+            mongoConnectionConfig: {}
+        };
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration.mongoUrl is null', async function() {
+        const configuration = {
+            mongoUrl: null,
+            databaseName: 'dbchangelog_test',
+            mongoConnectionConfig: {}
+        };
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration.databaseName is undefined', async function() {
+        const configuration = {
+            mongoUrl: 'mongodb://localhost',
+            databaseName: undefined,
+            mongoConnectionConfig: {}
+        };
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration.databaseName is null', async function() {
+        const configuration = {
+            mongoUrl: 'mongodb://localhost',
+            databaseName: null,
+            mongoConnectionConfig: {}
+        };
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration.mongoConnectionConfig is undefined', async function() {
+        const configuration = {
+            mongoUrl: 'mongodb://localhost',
+            databaseName: 'dbchangelog_test',
+            mongoConnectionConfig: undefined
+        };
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the configuration.mongoConnectionConfig is null', async function() {
+        const configuration = {
+            mongoUrl: 'mongodb://localhost',
+            databaseName: 'dbchangelog_test',
+            mongoConnectionConfig: null
+        };
+
+        try{
+            await changelog(configuration, []);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalConfigurationError);
+        }
+    });
+
+    it('should throw an error in case the task list is undefined', async function() {
+        try{
+            await changelog(CONFIG, undefined);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalTaskListFormat);
+        }
+    });
+
+    it('should throw an error in case the task list is null', async function() {
+        try{
+            await changelog(CONFIG, null);
+        } catch (error) {
+            error.should.be.an.instanceOf(IllegalTaskListFormat);
+        }
+    });
+
+    it('should apply unprocessed operations even though one task is undefined', function(done) {
+        changelog(CONFIG, [
+            {name: 'fourth', operation: fourthOperation},
+            undefined
+        ]).then(function(result) {
+            result.should.have.property('fourth', changelog.Statuses.SUCCESSFULLY_APPLIED);
+            mongoClient.db(CONFIG.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
+                user.should.have.property('username', 'admin');
+                user.should.have.property('password', 'test');
+                user.should.have.property('isAdmin', true);
+                done();
+            });
+        }).catch(function(error) {
+            done(error);
+        });
+    });
+
+    it('should apply unprocessed operations even though one task is null', function(done) {
+        changelog(CONFIG, [
+            {name: 'fifth', operation: fifthOperation},
+            null
+        ]).then(function(result) {
+            result.should.have.property('fifth', changelog.Statuses.SUCCESSFULLY_APPLIED);
+            mongoClient.db(CONFIG.databaseName).collection('users').findOne({username: 'admin'}).then(user => {
+                user.should.have.property('username', 'admin');
+                user.should.have.property('password', 'test');
+                user.should.have.property('isAdmin', true);
+                done();
+            });
+        }).catch(function(error) {
+            done(error);
+        });
     });
 });
