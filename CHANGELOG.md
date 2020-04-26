@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2020-04-26
+### Added
+- added property author to MongoDB changelog
+
 ## [3.2.0] - 2020-04-25
 ### Added
 - added test cases to check error handling
@@ -26,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - added CHANGELOG file
 
-[Unreleased]: https://github.com/hendrik-scholz/node-mongodb-changelog/compare/3.2.0...HEAD
+[Unreleased]: https://github.com/hendrik-scholz/node-mongodb-changelog/compare/3.3.0...HEAD
+[3.3.0]: https://github.com/hendrik-scholz/node-mongodb-changelog/compare/3.2.0...3.3.0
 [3.2.0]: https://github.com/hendrik-scholz/node-mongodb-changelog/compare/3.1.0...3.2.0
 [3.1.0]: https://github.com/hendrik-scholz/node-mongodb-changelog/compare/3.0.0...3.1.0
 [3.0.0]: https://github.com/hendrik-scholz/node-mongodb-changelog/compare/2.0.4...3.0.0

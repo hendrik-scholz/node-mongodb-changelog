@@ -71,6 +71,7 @@ async function processTask(task, changelogCollection) {
         await task.operation();
         const appliedChange = {
             name: task.name,
+            author: task.author,
             dateExecuted: new Date(),
             md5sum: md5sum
         };
@@ -97,7 +98,7 @@ function filterUndefinedOrNullTasks(tasks) {
 }
 
 function isTaskValid(task) {
-    return task.name && task.operation && task.operation instanceof Function;
+    return task.name && task.author && task.operation && task.operation instanceof Function;
 }
 
 function getMD5Sum(task) {

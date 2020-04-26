@@ -32,7 +32,7 @@ class IllegalTaskFormat extends Error {
       super(arguments);
       Error.captureStackTrace(this, IllegalTaskFormat);
 
-      this.message = 'Wrong task format. Expected { name: "taskname", operation: function }';
+      this.message = 'Wrong task format. Expected { name: "taskname", author: "author", operation: function }';
     }
 }
 
