@@ -1,6 +1,6 @@
 {
   "name": "mongodb-changelog",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "description": "Liquibase inspired mongodb changelog tool for node.",
   "main": "src/index.js",
   "scripts": {
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "mocha": "^7.1.1",
+    "mongodb-memory-server": "^6.5.2",
     "should": "11.2.1"
   }
 }

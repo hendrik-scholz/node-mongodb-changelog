@@ -10,6 +10,7 @@ const CONFIGURATION = {
 };
 
 const changelog = require('../src/index');
+const mongodb = require('./mongodb');
 const HashError = require('../src/error').HashError;
 const IllegalTaskListFormat = require('../src/error').IllegalTaskListFormat;
 const IllegalTaskFormat = require('../src/error').IllegalTaskFormat;
@@ -29,6 +30,9 @@ const promiseRejectOperation = () => Promise.reject('promiseRejectOperation');
 const errorOperation = () => {throw new Error('errorOperation')};
 
 before(async function() {
+    const uri = await mongodb.start();
+    CONFIGURATION.mongoUrl = uri;
+
     mongoClient = await MongoClient.connect(CONFIGURATION.mongoUrl, CONFIGURATION.mongoConnectionConfig);
     await mongoClient.db(CONFIGURATION.databaseName).collection('databasechangelog').deleteMany({});
     await mongoClient.db(CONFIGURATION.databaseName).collection('users').deleteMany({});
@@ -36,6 +40,7 @@ before(async function() {
 
 after(async function() {
     await mongoClient.close();
+    await mongodb.stop();
 });
 
 describe('changelog(config, tasks)', function() {
