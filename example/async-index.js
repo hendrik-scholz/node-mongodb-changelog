@@ -1,9 +1,10 @@
-const changelog = require('../src');
+// const changelog = require('mongodb-changelog');
+const changelog = require('../src'); // for testing only
 
-const config = {mongoUrl: 'mongodb://localhost:27017/test'};
+const config = {mongoUrl: 'mongodb://localhost:27017', databaseName: 'test', mongoConnectionConfig: {}};
 const tasks = [
-    {name: 'initDB',           operation: () => Promise.resolve(true)},
-    {name: 'addAppAdminUsers', operation: () => Promise.resolve(true)},
+    {name: 'initDB',           author: 'John', operation: () => Promise.resolve(true)},
+    {name: 'addAppAdminUsers', author: 'Jane', operation: () => Promise.resolve(true)},
     require('./filePerOperation')
 ];
 
@@ -14,4 +15,5 @@ async function run() {
         console.error(err.message)
     }
 }
+
 run();
