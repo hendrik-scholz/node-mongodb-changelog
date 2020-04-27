@@ -26,6 +26,7 @@ const secondOperation = () => Promise.resolve(true);
 const thirdOperation = () => Promise.reject();
 const fourthOperation = () => Promise.resolve(true);
 const fifthOperation = () => Promise.resolve(true);
+const sixthOperation = () => Promise.resolve(true);
 const promiseRejectOperation = () => Promise.reject('promiseRejectOperation');
 const errorOperation = () => {throw new Error('errorOperation')};
 
@@ -310,6 +311,20 @@ describe('changelog(config, tasks)', function() {
                 user.should.have.property('username', 'admin');
                 user.should.have.property('password', 'test');
                 user.should.have.property('isAdmin', true);
+                done();
+            });
+        }).catch(function(error) {
+            done(error);
+        });
+    });
+
+    it('should create an entry to the changelog table', function(done) {
+        changelog(CONFIGURATION, [
+            {name: 'sixth', author: 'John', operation: sixthOperation}
+        ]).then(function() {
+            mongoClient.db(CONFIGURATION.databaseName).collection('databasechangelog').findOne({name: 'sixth'}).then(user => {
+                user.should.have.property('name', 'sixth');
+                user.should.have.property('author', 'John');
                 done();
             });
         }).catch(function(error) {
