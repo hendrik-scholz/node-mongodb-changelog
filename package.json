@@ -1,10 +1,11 @@
 {
   "name": "mongodb-changelog",
-  "version": "3.4.1",
+  "version": "3.4.2",
   "description": "Liquibase inspired mongodb changelog tool for node.",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha test --reporter=list --check-leaks"
+    "lint": "eslint ./src/**/*.js",
+    "test": "mocha ./test/*.js --reporter=list --check-leaks"
   },
   "files": [
     "src"
@@ -36,9 +37,12 @@
     "mongodb": "^3.5.6"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.1",
-    "mongodb-memory-server": "^6.5.2",
-    "should": "11.2.1"
+    "mongodb-memory-server": "^6.5.2"
   },
   "config": {
     "mongodbMemoryServer": {

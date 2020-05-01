@@ -4,9 +4,7 @@ Liquibase inspired MongoDB migration tool for Node.js.
 
 ## Install
 
-Requires Node.js 8+ since this package uses generators, Promises and other ES2015 (ES6) features.
-
-```npm install mongodb-changelog```
+```npm i --save https://github.com/hendrik-scholz/node-mongodb-changelog/#master```
 
 ## Usage
 
