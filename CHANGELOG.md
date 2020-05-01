@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.4.2] - 2020-05-01
 ### Added
-- added ESlint
+- added ESLint
 - added code coverage tool
 ### Changed
 - refactoring

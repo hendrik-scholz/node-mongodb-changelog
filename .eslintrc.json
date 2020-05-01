@@ -28,5 +28,5 @@
         }],
         "prefer-rest-params": 0
     },
-    "ignorePatterns": ["test"]
+    "ignorePatterns": ["example", "test"]
 }
