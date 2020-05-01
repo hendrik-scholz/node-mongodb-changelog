@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.4.2] - 2020-05-01
 ### Added
 - added ESlint
+- added code coverage tool
 ### Changed
 - refactoring
 - replaced assertion library with Chai
-- changed code style according to linting rules
+- changed code style according to ESLint rules
 - updated install section in README file
 ### Fixed
 - fixed validator functions
